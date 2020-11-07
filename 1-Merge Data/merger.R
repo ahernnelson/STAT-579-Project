@@ -1,39 +1,59 @@
 library(dplyr)
-header <- list()
-for (i in c(1991,seq(1993,2017,3))){
-  header[[as.character(i%%100)]] <- get_nychsv(year=i,col_keys = T)
-}
+source("1-Merge Data\\get_nychvs.R")
+
 ### Creating column vectors ##############
 cond_col <- paste0("X_",c(paste0("d",1:4), paste0("e",1:3), paste0("g", 1:4),paste0("f",c(1,2,4,5))))
 num_col <- paste0("X_",c("30a", "31b", "32b","28c", "26c", "25c", "24a", "35a","36a", 
                          "37a" ,"38a","1f","15a","30a","31b","14", "28c","28d2"))
 all_col<- c("year","borough",cond_col, num_col, "hhinc", "npr", "mgrent","sba")
+
+
 ### Checking for name differences ########
-header$`91` %>% select(one_of(all_col)) %>% t() # No f4, f5, and no 31b
-header$`93` %>% select(one_of(all_col)) %>% t() # No f4, f5, and no 31b
-header$`96` %>% select(one_of(all_col)) %>% t() # Clean
-header$`99` %>% select(one_of(all_col)) %>% t() # Clean
-header$`2` %>% select(one_of(all_col)) %>% t()  # Clean
-header$`5` %>% select(one_of(all_col)) %>% t()  # Clean
-header$`8` %>% select(one_of(all_col)) %>% t()  # Clean
-header$`11` %>% select(one_of(all_col)) %>% t() # Clean
-header$`14` %>% select(one_of(all_col)) %>% t() # Clean
-header$`17` %>% select(one_of(all_col)) %>% t() # (d1,d2),(g1,g2) replaced by d12,g12
+
+# header <- list()
+# for (i in c(1991,seq(1993,2017,3))){
+#   header[[as.character(i%%100)]] <- get_nychvs(year=i,col_keys = T)
+# }
+
+# header$`91` %>% select(one_of(all_col)) %>% t() # No f4, f5, and no 31b
+# header$`93` %>% select(one_of(all_col)) %>% t() # No f4, f5, and no 31b
+# header$`96` %>% select(one_of(all_col)) %>% t() # Clean
+# header$`99` %>% select(one_of(all_col)) %>% t() # Clean
+# header$`2` %>% select(one_of(all_col)) %>% t()  # Clean
+# header$`5` %>% select(one_of(all_col)) %>% t()  # Clean
+# header$`8` %>% select(one_of(all_col)) %>% t()  # Clean
+# header$`11` %>% select(one_of(all_col)) %>% t() # Clean
+# header$`14` %>% select(one_of(all_col)) %>% t() # Clean
+# header$`17` %>% select(one_of(all_col)) %>% t() # (d1,d2),(g1,g2) replaced by d12,g12
+
+### Read in Data ####
+data17 <- get_nychvs(year = 2017)
+data14 <- get_nychvs(year = 2014)
+data11 <- get_nychvs(year = 2011)
+data08 <- get_nychvs(year = 2008)
+data05 <- get_nychvs(year = 2005)
+data02 <- get_nychvs(year = 2002)
+data99 <- get_nychvs(year = 1999)
+data96 <- get_nychvs(year = 1996)
+data93 <- get_nychvs(year = 1993)
+data91 <- get_nychvs(year = 1991)
+
+
 
 ### Merging Data #####
 data91 %>% mutate(X_f4 = 9, X_f5 = 9, X_31b= 99999) %>%
-  select(all_col) -> trim_91
+  select(all_of(all_col)) -> trim_91
 data93 %>% mutate(X_f4 = 9, X_f5=9, X_31b= 99999) %>%
-  select(all_col) -> trim_93
-data96 %>% select(all_col) -> trim_96
-data99 %>% select(all_col) -> trim_99
-data02 %>% select(all_col) -> trim_02
-data05 %>% select(all_col) -> trim_05
-data08 %>% select(all_col) -> trim_08
-data11 %>% select(all_col) -> trim_11
-data14 %>% select(all_col) -> trim_14
+  select(all_of(all_col)) -> trim_93
+data96 %>% select(all_of(all_col)) -> trim_96
+data99 %>% select(all_of(all_col)) -> trim_99
+data02 %>% select(all_of(all_col)) -> trim_02
+data05 %>% select(all_of(all_col)) -> trim_05
+data08 %>% select(all_of(all_col)) -> trim_08
+data11 %>% select(all_of(all_col)) -> trim_11
+data14 %>% select(all_of(all_col)) -> trim_14
 data17 %>% rename(X_d1 = X_d12, X_g1 = X_g12) %>%
-  mutate(X_d2 = 9, X_g2=9, X_15a = NA) %>% select(all_col) -> trim_17
+  mutate(X_d2 = 9, X_g2=9, X_15a = NA) %>% select(all_of(all_col)) -> trim_17
 
 ## removing uneeded data ##
 rm(list= paste0("data", c(91, 93, 96, 99, "02", "05", "08", 11, 14, 17)))
@@ -41,9 +61,12 @@ rm(list= paste0("data", c(91, 93, 96, 99, "02", "05", "08", 11, 14, 17)))
 all_data <- bind_rows(trim_91, trim_93, trim_96, trim_99, 
                       trim_02, trim_05, trim_08, trim_11, 
                       trim_14, trim_17)
+## remove trim
 rm(list = paste0("trim_", c(91, 93, 96, 99, "02", "05", "08", 11, 14, 17)))
-### Recode to Index Calculation ###
-all_data %>% mutate_at(vars(cond_col),recode,
+
+
+### Index Calculation ####
+all_data %>% mutate_at(vars(all_of(cond_col)),recode,
                           `1` = 1,
                           `8` = 0,
                           `9` = 0) %>%
@@ -59,8 +82,9 @@ all_data %>% mutate_at(vars(cond_col),recode,
   mutate(heat_score = 2*recode(X_32b,`2`=1, `3`=2, `4`=3, `5`= 4, `8` = 0, `9` = 0)) %>%
   mutate(facilites_score = heat_score + toilet_score + kitchen_score) %>% 
   transmute(total_score = cond_score + facilites_score) -> score
+
 all_data %>% mutate(menergy = na_if(X_28c,9999)) -> all_data
 all_data$pqi <- score$total_score
 all_data %>% head()
 
-write.csv(all_data,"all_data.csv")
+write.csv(all_data,"Datasets\\all_data.csv")
