@@ -5,26 +5,26 @@ source("1-Merge Data\\get_nychvs.R")
 cond_col <- paste0("X_",c(paste0("d",1:4), paste0("e",1:3), paste0("g", 1:4),paste0("f",c(1,2,4,5))))
 num_col <- paste0("X_",c("30a", "31b", "32b","28c", "26c", "25c", "24a", "35a","36a", 
                          "37a" ,"38a","1f","15a","30a","31b","14", "28c","28d2"))
-all_col<- c("year","borough",cond_col, num_col, "hhinc", "npr", "mgrent","sba")
+all_col<- c("year","borough",cond_col, num_col, "hhinc", "npr", "mgrent","sba","csr") # csrr
 
 
 ### Checking for name differences ########
 
-# header <- list()
-# for (i in c(1991,seq(1993,2017,3))){
-#   header[[as.character(i%%100)]] <- get_nychvs(year=i,col_keys = T)
-# }
+header <- list()
+for (i in c(1991,seq(1993,2017,3))){
+  header[[as.character(i%%100)]] <- get_nychvs(year=i,col_keys = T)
+}
 
-# header$`91` %>% select(one_of(all_col)) %>% t() # No f4, f5, and no 31b
-# header$`93` %>% select(one_of(all_col)) %>% t() # No f4, f5, and no 31b
-# header$`96` %>% select(one_of(all_col)) %>% t() # Clean
-# header$`99` %>% select(one_of(all_col)) %>% t() # Clean
-# header$`2` %>% select(one_of(all_col)) %>% t()  # Clean
-# header$`5` %>% select(one_of(all_col)) %>% t()  # Clean
-# header$`8` %>% select(one_of(all_col)) %>% t()  # Clean
-# header$`11` %>% select(one_of(all_col)) %>% t() # Clean
-# header$`14` %>% select(one_of(all_col)) %>% t() # Clean
-# header$`17` %>% select(one_of(all_col)) %>% t() # (d1,d2),(g1,g2) replaced by d12,g12
+header$`91` %>% select(one_of(all_col)) %>% t() # No f4, f5, no 31b, and no csrr
+header$`93` %>% select(one_of(all_col)) %>% t() # No f4, f5, and no 31b
+header$`96` %>% select(one_of(all_col)) %>% t() # Clean
+header$`99` %>% select(one_of(all_col)) %>% t() # Clean
+header$`2` %>% select(one_of(all_col)) %>% t()  # Clean
+header$`5` %>% select(one_of(all_col)) %>% t()  # Clean
+header$`8` %>% select(one_of(all_col)) %>% t()  # Clean
+header$`11` %>% select(one_of(all_col)) %>% t() # No csr, now csrr
+header$`14` %>% select(one_of(all_col)) %>% t() # No csr, now csrr
+header$`17` %>% select(one_of(all_col)) %>% t() # (d1,d2),(g1,g2) replaced by d12,g12  No csr, now csrr
 
 ### Read in Data ####
 data17 <- get_nychvs(year = 2017)
@@ -50,10 +50,15 @@ data99 %>% select(all_of(all_col)) -> trim_99
 data02 %>% select(all_of(all_col)) -> trim_02
 data05 %>% select(all_of(all_col)) -> trim_05
 data08 %>% select(all_of(all_col)) -> trim_08
-data11 %>% select(all_of(all_col)) -> trim_11
-data14 %>% select(all_of(all_col)) -> trim_14
-data17 %>% rename(X_d1 = X_d12, X_g1 = X_g12) %>%
-  mutate(X_d2 = 9, X_g2=9, X_15a = NA) %>% select(all_of(all_col)) -> trim_17
+data11 %>% rename(csr = csrr) %>%
+  select(all_of(all_col)) -> trim_11
+data14 %>% rename(csr = csrr) %>% 
+  select(all_of(all_col)) -> trim_14
+data17 %>% rename(X_d1 = X_d12, 
+                  X_g1 = X_g12, 
+                  csr = csrr) %>%
+  mutate(X_d2 = 9, X_g2=9, X_15a = NA) %>% 
+  select(all_of(all_col)) -> trim_17
 
 ## removing uneeded data ##
 rm(list= paste0("data", c(91, 93, 96, 99, "02", "05", "08", 11, 14, 17)))
@@ -88,3 +93,4 @@ all_data$pqi <- score$total_score
 all_data %>% head()
 
 write.csv(all_data,"Datasets\\all_data.csv")
+rm(score)
