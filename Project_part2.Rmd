@@ -1,0 +1,130 @@
+---
+title: "Project_part2"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+data2017 <- read.csv("Datasets/NYCHVS 2017 Occupied File for ASA Challenge_CSV.csv")
+head(data2017)
+dataall <- read.csv("Datasets/all_data.csv")
+data2017_all <- dataall %>% filter(year == 2017)
+data2017 <- data2017[-1,]
+New_date2017 <- cbind(data2017, data2017_all)
+```
+
+#### We clean the dataset to generate a dateset for anaylsis
+
+```{r}
+New_data_regression <- New_date2017[,-c(254, 252)] %>% select(X_1b,X_1c,X_1f,X_1e,X_2,X_3, X_4a, X_5, X_6, X_12b, pqi, X_14)
+New_data_regression$X_1c <- as.numeric(New_data_regression$X_1c)
+New_data_regression$X_4a <- as.numeric(New_data_regression$X_4a)
+model <- lm(pqi ~ X_1b + X_1c +X_1f + X_1e + X_2 + X_3 + X_4a + X_5 + X_6  + X_12b + X_14,data =New_data_regression)
+summary(model)
+```
+
+#### We use a regression model to select variables which are statistically significan with PQI. Form the result of the regression model, we found that the variable X_1b, X_1c, X_1f, X_1e, X_2, X_3, X_4a, X_6 are statistically significant with the PQI. We only run regression for selection since all vairiable in the data are categorical.So,it is hard to see a direct analysis result only from regression. In the next steps, We will apply data visualization method to explore the relationship between theses variable selected and PQI.
+
+
+```{r}
+New_data_regression %>% ggplot() + geom_boxplot(aes(x =X_1f, y=pqi)) + 
+    scale_x_discrete(labels=c("1" = "White", "2" = "Black or African American","3"="American Indian or Alaska Native",
+                              "4"="Chinese","5"="Filipino","6"="Korean",
+                              "7"="Asian Indian,Pakistani, or Bangladesh", "8"="Other Asian",
+                              "9"="Native Hawaiian or Pacific Islander","10" = "More Races or Other Race ")) +
+    xlab("Householder's Race") + coord_flip()
+```
+
+#### The Boxplot demonstrates that the Native Hawaiian or Pacific islander, American Indian or Alaska Native, Black or African American, and Other Race live in the houses which has higher PQI which means better house condition. While the people in other race ,such as Korean, Chinese,live in the house with lower PQI.
+
+```{r}
+New_data_regression %>% ggplot() + geom_boxplot(aes(x =X_1e, y=pqi)) +
+    scale_x_discrete(labels=c("1" = "No", "2" = "Puerto Rican","3"="Dominican",
+                                            "4"="Cuban","5"="South/Central American","6"="Mexican, Mexican-American, Chicano",
+                                            "7"="Other Spanish/Hispanic")) +
+    xlab("Householder of Spanish/Hispanic") + coord_flip()
+```
+
+#### The Boxplot illustrated that Mexican,Mexican-Amercican,Chicano,Dominican and Puerto Rican live in worse houses with higher PQI. Howerver, South/Central American, Cuban, and Other Spanish/Hispanic live in better conditon houses.
+
+```{r}
+New_data_regression %>% ggplot() + geom_boxplot(aes(x = X_3, y=pqi)) +
+    scale_x_discrete(labels=c("1"="Always lived in this unit",
+                              "2"="Other unit in same building",
+                              "3"="Bronx",
+                              "4"="Brooklyn",
+                              "5"="Manhattan",
+                              "6"="Queens",
+                              "7"="Staten Island",
+                              "8"="NY, NJ, Connecticut",
+                              "9"="Other state or Puerto Rico",
+                              "10"="Dominican Republic",
+                              "11"="Caribbean (other than Puerto Rico or Dom. Rep.)",
+                              "12"="Mexico, Central America, South America, Canada",
+                              "13"="Armenia, Azerbaijan, Belarus, Estonia, Georgia, Kazakhstan, Kyrgyzstan, Latvia, Lithuania,
+                              Moldova, Russia, Tajikistan, Turkmenistan, Ukraine, Uzbekistan, or other European countries",
+                              "14"="All other countries",
+                              "98"="Not reported")) +
+    xlab("Most Recent Place Householder Lived or 6 Months or More") + coord_flip()
+
+```
+
+#### The boxplot shows that the householders who had lived for 6 month more in the Bronx, Caribbean and Dominican Republic and who always lived in the same unit may be in the hourses with higher PQI which means worse housing condition. Compared with the householders in above place, the residence in other places and countries may live in the better condition houses with higher PQI. 
+
+```{r}
+New_data_regression %>% ggplot() + geom_boxplot(aes(x = X_6, y=pqi)) +
+    scale_x_discrete(labels=c("1"="Change in employment status",
+                              "2"="Looking for work",
+                              "3"="Commuting reasons",
+                              "4"="To attend school",
+                              "5"="Other financial/employment reason",
+                              "6"="Needed larger house or apartment",
+                              "7"="Widowed, separated/divorced, or family decreased",
+                              "8"="Newly married",
+                              "9"="Moved to be with or closer to relatives",
+                              "10"="Wanted to establish separate household",
+                              "11"="Other family reason",
+                              "12"="Wanted this neighborhood/better neighborhood services",
+                              "13"="Other neighborhood reason",
+                              "14"="Wanted to own residence",
+                              "15"="Wanted to rent residence",
+                              "16"="Wanted greater housing affordability",
+                              "17"="Wanted better quality housing",
+                              "18"="Evicted, displaced, or harassment by landlord",
+                              "19"="Other housing reason",
+                              "20"="Any other reason",
+                              "98"="Not reported",
+                              "99"="Not applicable (moved in 2013 or earlier)")) +
+    xlab("Reason for Householder Moving") + coord_flip()
+```
+
+#### The box plot explores reasons for household to move out. The householders who moved out due to evicted,diplacd,or harassment by lanlord are more likely to live in the house with high PQI. The similar trend are also shared by the householders who moved out for wanting gearter house affordability.
+
+```{r}
+New_data_regression$X_1c_c <- New_data_regression$X_1c %>% cut(breaks=c(15, 22, 30, 50, 65, 85))
+New_data_regression %>% ggplot() + geom_density(aes(x=pqi, fill = X_1c_c)) + scale_fill_discrete(name="Age Group",labels=c("15 to 22", "22 to 30", "30 to 50","50 to 65","65 to 85"))
+```
+
+#### The density plot shows that the the householders in age group 15 to 22 have a different distribution with householders in other age groups. We can see the difference in the second peak. Near the peak, people in age group 15 to 22 have a more soomth curve than other age groups,which means the people in 15 to 22 are more flexible in accepting various house conditions PQI than other age groups.
+
+```{r}
+New_data_regression$X_4a_c <- New_data_regression$X_4a %>% cut(breaks=c(1950, 1975, 2000, 2010, 2020))
+New_data_regression %>% ggplot() + 
+    geom_histogram(aes(x=pqi, fill = X_4a_c), alpha = 0.5, position= "dodge") + scale_fill_discrete(name="Year To Move In",labels=c("1950 to 1975", "1975 to 2000", "2000 to 2010","2010 to 2020"))
+```
+
+#### From the histogram shows that the distribution of PQI for different move in year group are nearly the same. 
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
