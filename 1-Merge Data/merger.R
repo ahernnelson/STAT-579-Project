@@ -26,6 +26,8 @@ header$`11` %>% select(one_of(all_col)) %>% t() # No csr, now csrr
 header$`14` %>% select(one_of(all_col)) %>% t() # No csr, now csrr
 header$`17` %>% select(one_of(all_col)) %>% t() # (d1,d2),(g1,g2) replaced by d12,g12  No csr, now csrr
 
+
+
 ### Read in Data ####
 data17 <- get_nychvs(year = 2017)
 data14 <- get_nychvs(year = 2014)
@@ -91,6 +93,8 @@ all_data %>% mutate_at(vars(all_of(cond_col)),recode,
 all_data %>% mutate(menergy = na_if(X_28c,9999)) -> all_data
 all_data$pqi <- score$total_score
 all_data %>% head()
+
+all_data[all_data$year<100,"year"] <- all_data[all_data$year<100,"year"] + 1900
 
 write.csv(all_data,"Datasets\\all_data.csv")
 rm(score)
