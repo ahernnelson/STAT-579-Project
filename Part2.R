@@ -18,11 +18,11 @@ New_data_regression$X_4a <- as.numeric(New_data_regression$X_4a)
 preds <- quo(c(X_1b,X_1c,X_1f,X_1e,X_2,X_3, X_4a, X_5, X_6, X_12b, X_14))
 New_data_regression %>% 
     as_tibble() %>%
-    mutate(across(!! preds, .fns = as.numeric)) ->
+    mutate(across(!! preds, .fns = as.character)) ->
     New_data_regression2
 
 ### Run regression for variable selection
-model <- lm(pqi ~ X_1b + X_1c +X_1f + X_1e + X_2 + X_3 + X_4a + X_5 + X_6  + X_12b + X_14,data = New_data_regression)
+model <- lm(pqi ~ X_1b + X_1c +X_1f + X_1e + X_2 + X_3 + X_4a + X_5 + X_6  + X_12b + X_14,data = New_data_regression2)
 summary(model)
 
 
