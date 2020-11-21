@@ -1,5 +1,5 @@
 library(dplyr)
-source("1-Merge Data\\get_nychvs.R")
+source("1-Merge Data\\get_nychvs.R") # see code
 
 ### Creating column vectors ##############
 cond_col <- paste0("X_",c(paste0("d",1:4), paste0("e",1:3), paste0("g", 1:4),paste0("f",c(1,2,4,5))))
@@ -92,9 +92,31 @@ all_data %>% mutate_at(vars(all_of(cond_col)),recode,
 
 all_data %>% mutate(menergy = na_if(X_28c,9999)) -> all_data
 all_data$pqi <- score$total_score
-all_data %>% head()
+
+rm(score)
+
+
+# Final Cleaning ----------------------------------------------------------
 
 all_data[all_data$year<100,"year"] <- all_data[all_data$year<100,"year"] + 1900
 
+all_data %>% rename(m_rent = X_30a,
+                    n_heat = X_32b, 
+                    fun_kitchen = X_26c,
+                    b_toilet = X_25c, 
+                    n_room = X_25c,
+                    rats = X_35a, 
+                    leak = X_38a, 
+                    Borough=borough) %>%
+  mutate(Borough = recode(Borough,
+                          `1`="Bronx",
+                          `2`="Brooklyn",
+                          `3`="Manhattan",
+                          `4`="Queens", 
+                          `5`="Staten Island")) %>%
+  mutate(m_rent = na_if(m_rent, 99999)) %>%
+  mutate(m_rent = na_if(m_rent, 99998)) -> all_data
+
+
 write.csv(all_data,"Datasets\\all_data.csv")
-rm(score)
+

@@ -9,12 +9,12 @@ all_data %>%
     ggplot(aes(x = as.factor(csr), y=freq)) + 
     geom_col(position = "dodge", col = "black") +
     scale_y_continuous(labels = scales::percent)
-plotly::ggplotly()
+
 
 all_data %>%
     mutate(rent_control = case_when(csr %in% c(1,2,12) ~ "Non Rental Property",
                                     csr %in% c(5, 20, 21, 22, 23, 85, 86, 95) ~ "Other Regulation",
-                                    csr %in% c(30, 31, 90) ~ "Controlled or Stabilized",
+                                    csr %in% c(30, 31, 90) ~ "Rent Controlled or Stabilized",
                                     csr == 80 ~ "Unregulated")) -> rc_data
 rc_data %>%
     filter(year == 2017) %>%
@@ -36,9 +36,13 @@ plotly::ggplotly()
 
 rc_data %>%
     filter(year == 2017) %>%
-    ggplot(aes(x = rent_control, y=pqi)) + 
-    geom_boxplot(col = "black") 
-plotly::ggplotly()
+    ggplot(aes(x = rent_control, y=log(pqi+1))) + 
+    geom_boxplot(col = "black", fill = "gray", alpha = .5) + 
+    theme_bw()  +
+    xlab("\nRental Status") +
+    ylab("Log Transformed PQI\n") +
+    ggtitle("Variation in PQI by Rent-Regulation Status")
+
     
 
 
