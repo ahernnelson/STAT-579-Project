@@ -10,24 +10,34 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 ```
 
-## R Markdown
+# Part three: Household Characteristics Analysis {#anchor}
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+We have constructed a new index PQI to measure the quality of the house. In this part, we will explore the relationship between the index PQI with the householder characters. The householder characters are described by the variables in the householder record which is part of the date. There are more than 20 variables in the householder record and most of them are categorical. 
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+In part three, we will analyze the 2017 data set to answer the two question:  
+
++ What the relationship between householder’s characters with the PQI.  
++ How these characters impact the PQI.  
+
+## 1.Data Cleaning
+
+We reduce the redundant columns for data 2017 and generate our new data set by combination. 
 
 ```{r}
 data2017 <- read.csv("Datasets/NYCHVS 2017 Occupied File for ASA Challenge_CSV.csv")
-head(data2017)
 dataall <- read.csv("Datasets/all_data.csv")
 data2017_all <- dataall %>% filter(year == 2017)
 data2017 <- data2017[-1,]
 New_date2017 <- cbind(data2017, data2017_all)
 ```
 
-#### We clean the dataset to generate a dateset for anaylsis
+## 2.Variable Selection
 
-```{r}
+There are more than 20 variable in householder record. However, not all variables are related with the PQI index. We exclude some variable which can not provide useful information. For example, Down Payment (2) have only three response: 0=Don't know, 8=Not reported, 9=Not applicable. Evidently,down payment 2 can not provide me useful information and so we exclude it. 
+
+After excluding the variables which are non-informative, we run a regression model to select variables which are statistically significant with PQI. The regression is only run for selection rather than analyzing. The reason is that most of the variables in the regression are categorical and hardly can be converted into numeric for the way surveyed. So,the analysis result from regression is complex and confused to explaining. Instead of using regression model, we will explore these variables by visualization.     
+
+```{r, echo=TRUE, results='hide'}
 New_data_regression <- New_date2017[,-c(254, 252)] %>% select(X_1b,X_1c,X_1f,X_1e,X_2,X_3, X_4a, X_5, X_6, X_12b, pqi, X_14)
 New_data_regression$X_1c <- as.numeric(New_data_regression$X_1c)
 New_data_regression$X_4a <- as.numeric(New_data_regression$X_4a)
@@ -35,9 +45,38 @@ model <- lm(pqi ~ X_1b + X_1c +X_1f + X_1e + X_2 + X_3 + X_4a + X_5 + X_6  + X_1
 summary(model)
 ```
 
-#### We use a regression model to select variables which are statistically significan with PQI. Form the result of the regression model, we found that the variable X_1b, X_1c, X_1f, X_1e, X_2, X_3, X_4a, X_6 are statistically significant with the PQI. We only run regression for selection since all vairiable in the data are categorical.So,it is hard to see a direct analysis result only from regression. In the next steps, We will apply data visualization method to explore the relationship between theses variable selected and PQI.
+We have part of result from the regression model here and we found the variables shown below are statistically significant with the Index PQI. 
 
++ Householder's Race 
++ Householder of Spanish/Hispanic
++ Reason for Householder Moving
++ Age Group
 
+```{r}
+## 
+## Call:
+## lm(formula = pqi ~ X_1b + X_1c + X_1f + X_1e + X_2 + X_3 + X_4a + 
+##     X_5 + X_6 + X_12b + X_14, data = New_data_regression)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -6.6095 -2.3507 -0.9458  1.1736 29.3569 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)  55.730639   8.085602   6.893 5.73e-12 ***
+## X_1b2         0.291392   0.068710   4.241 2.24e-05 ***
+## X_1c         -0.013532   0.002544  -5.319 1.06e-07 ***
+## X_1f10        1.593444   0.307460   5.183 2.22e-07 ***
+## X_1f2         1.322985   0.083938  15.761  < 2e-16 ***
+## X_1f3         1.867951   0.329151   5.675 1.42e-08 ***
+```
+
+## 3.Householder Charactors Analysis
+
+In this section, we will show how these variables impact the PQI index by box-plot or density plot.
+
+### Householder's Race 
 ```{r}
 New_data_regression %>% ggplot() + geom_boxplot(aes(x =X_1f, y=pqi)) + 
     scale_x_discrete(labels=c("1" = "White", "2" = "Black or African American","3"="American Indian or Alaska Native",
@@ -47,7 +86,9 @@ New_data_regression %>% ggplot() + geom_boxplot(aes(x =X_1f, y=pqi)) +
     xlab("Householder's Race") + coord_flip()
 ```
 
-#### The Boxplot demonstrates that the Native Hawaiian or Pacific islander, American Indian or Alaska Native, Black or African American, and Other Race live in the houses which has higher PQI which means better house condition. While the people in other race ,such as Korean, Chinese,live in the house with lower PQI.
+### Householder of Spanish/Hispanic
+
+The Box-plot demonstrates that the Native Hawaiian or Pacific islander, American Indian or Alaska Native, Black or African American, and Other Race generally lived in the houses with higher PQI While the people in other race ,such as Korean, Chinese,live in the house with lower PQI.
 
 ```{r}
 New_data_regression %>% ggplot() + geom_boxplot(aes(x =X_1e, y=pqi)) +
@@ -57,7 +98,9 @@ New_data_regression %>% ggplot() + geom_boxplot(aes(x =X_1e, y=pqi)) +
     xlab("Householder of Spanish/Hispanic") + coord_flip()
 ```
 
-#### The Boxplot illustrated that Mexican,Mexican-Amercican,Chicano,Dominican and Puerto Rican live in worse houses with higher PQI. Howerver, South/Central American, Cuban, and Other Spanish/Hispanic live in better conditon houses.
+The Box-plot illustrated that the householders from Mexican, Mexican-American, Chicano,Dominican and Puerto Rican generally lived in worse houses with higher PQI. By comparison, the householders from South/Central American, Cuban, and Other Spanish/Hispanic generally lived in better condition houses with low PQI.
+
+### Most Recent Place Householder Lived for 6 Months or More
 
 ```{r}
 New_data_regression %>% ggplot() + geom_boxplot(aes(x = X_3, y=pqi)) +
@@ -73,15 +116,16 @@ New_data_regression %>% ggplot() + geom_boxplot(aes(x = X_3, y=pqi)) +
                               "10"="Dominican Republic",
                               "11"="Caribbean (other than Puerto Rico or Dom. Rep.)",
                               "12"="Mexico, Central America, South America, Canada",
-                              "13"="Armenia, Azerbaijan, Belarus, Estonia, Georgia, Kazakhstan, Kyrgyzstan, Latvia, Lithuania,
-                              Moldova, Russia, Tajikistan, Turkmenistan, Ukraine, Uzbekistan, or other European countries",
+                              "13"="Armenia, Azerbaijan , ..., other European countries",
                               "14"="All other countries",
                               "98"="Not reported")) +
-    xlab("Most Recent Place Householder Lived or 6 Months or More") + coord_flip()
+    xlab("Most Recent Place Householder Lived for 6 Months or More") + coord_flip()
 
 ```
 
-#### The boxplot shows that the householders who had lived for 6 month more in the Bronx, Caribbean and Dominican Republic and who always lived in the same unit may be in the hourses with higher PQI which means worse housing condition. Compared with the householders in above place, the residence in other places and countries may live in the better condition houses with higher PQI. 
+The box-plot shows that the Householder lived in the Bronx, Caribbean and Dominican Republic and those who always lived in the same unit may be in the house with higher PQI compared with the householders in other places.In intuition, people who always live in the same unit may have low PQI which mean better house condition. However,the box-plot give us an implication that people may more tend to live in a house with high PQI.      
+
+### Reason for Householder Moving
 
 ```{r}
 New_data_regression %>% ggplot() + geom_boxplot(aes(x = X_6, y=pqi)) +
@@ -110,21 +154,19 @@ New_data_regression %>% ggplot() + geom_boxplot(aes(x = X_6, y=pqi)) +
     xlab("Reason for Householder Moving") + coord_flip()
 ```
 
-#### The box plot explores reasons for household to move out. The householders who moved out due to evicted,diplacd,or harassment by lanlord are more likely to live in the house with high PQI. The similar trend are also shared by the householders who moved out for wanting gearter house affordability.
+The box plot explores reasons for household to move out. The householders who moved out due to evicted,displaced,or harassment by landlord are more likely to live in low PQI house and those who wanting greater house affordability may also has low PQI. 
+
+### Age Groups
 
 ```{r}
 New_data_regression$X_1c_c <- New_data_regression$X_1c %>% cut(breaks=c(15, 22, 30, 50, 65, 85))
 New_data_regression %>% ggplot() + geom_density(aes(x=pqi, fill = X_1c_c)) + scale_fill_discrete(name="Age Group",labels=c("15 to 22", "22 to 30", "30 to 50","50 to 65","65 to 85"))
 ```
+The density plot shows that the householders in age group 15 to 22 have a different distribution with householders in other age groups. We can see the difference around the second peak where the PQI is close 3. Near the peak, people in age group 15 to 22 have a more smooth curve than other age groups.It means the people in 15 to 22 are more flexible in accepting various house conditions PQI near the 3 than other age groups. 
 
-#### The density plot shows that the the householders in age group 15 to 22 have a different distribution with householders in other age groups. We can see the difference in the second peak. Near the peak, people in age group 15 to 22 have a more soomth curve than other age groups,which means the people in 15 to 22 are more flexible in accepting various house conditions PQI than other age groups.
-
-```{r}
-New_data_regression$X_4a_c <- New_data_regression$X_4a %>% cut(breaks=c(1950, 1975, 2000, 2010, 2020))
-New_data_regression %>% ggplot() + 
-    geom_histogram(aes(x=pqi, fill = X_4a_c), alpha = 0.5, position= "dodge") + scale_fill_discrete(name="Year To Move In",labels=c("1950 to 1975", "1975 to 2000", "2000 to 2010","2010 to 2020"))
-```
-
-#### From the histogram shows that the distribution of PQI for different move in year group are nearly the same. 
+# Conclusion
++ We construct an index to quantify the quality of housing units. The PQI was evaluated by the weights of multiple variables.
++ We have a preliminary analysis of rental units based on the PQI and answered the question :Do rental units have a higher PQI, on average, than owner occupied units?
++ We explored the relationship between PQI and householders characters and answered the tow question: What the relationship between householder’s characters with the PQI and How these characters impact the PQI.  
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
