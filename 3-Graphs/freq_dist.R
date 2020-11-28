@@ -1,5 +1,4 @@
-library(ggplot2)
-library(dplyr)
+#library(tidyverse)
 library(gganimate)
 library(gifski)
 
@@ -24,8 +23,10 @@ all_data %>% group_by(year, pqi) %>% summarise(count = n()) %>%
     enter_fade() -> 
     g
 
-animate(g, height = 4.5, width = 6, units = "in", res = 180)
+animate(g)
 
-anim_save(filename = "3-Graphs//freq_dist.gif")
+#animate(g, height = 4.5, width = 6, units = "in", res = 180)
+
+# anim_save(filename = "3-Graphs//freq_dist.gif")
 
 

@@ -1,5 +1,4 @@
-library(tidyverse)
-
+#library(tidyverse)
 all_data %>%
     mutate(rent_control = case_when(csr %in% c(1,2,12) ~ "Non-Rental Property",
                                     csr %in% c(5, 20, 21, 22, 23, 85, 86, 95) ~ "Other Regulation",

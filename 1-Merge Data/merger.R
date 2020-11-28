@@ -88,7 +88,7 @@ all_data %>% mutate_at(vars(all_of(cond_col)),recode,
   mutate(toilet_score = recode(X_25c, `1` = 3, `2` = 0, `3` = 5,`8` = 0, `9` = 5)) %>%
   mutate(heat_score = 2*recode(X_32b,`2`=1, `3`=2, `4`=3, `5`= 4, `8` = 0, `9` = 0)) %>%
   mutate(facilites_score = heat_score + toilet_score + kitchen_score) %>% 
-  transmute(total_score = cond_score + facilites_score) -> score
+  mutate(total_score = cond_score + facilites_score) -> score
 
 all_data %>% mutate(menergy = na_if(X_28c,9999)) -> all_data
 all_data$pqi <- score$total_score

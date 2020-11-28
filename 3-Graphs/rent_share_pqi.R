@@ -1,9 +1,6 @@
-library(tidyverse)
+#library(tidyverse)
 library(scales)
 library(ggsci)
-
-
-`%!in%` <- Negate(`%in%`)
 
 sec_labels = paste0(c(69:73),"%")
 labs <- seq(1990, 2017, 3)
