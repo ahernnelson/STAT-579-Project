@@ -20,4 +20,4 @@ all_data %>% group_by(year) %>% summarise(`Index > 0` = sum(pqi > 0)/n(),
     theme_bw(base_size = 14) + 
     theme(legend.position="none")
 
-ggsave("percent_units_pqi.png")
+#ggsave("percent_units_pqi.png")

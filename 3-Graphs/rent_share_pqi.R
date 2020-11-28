@@ -25,4 +25,4 @@ all_data %>%
         scale_linetype_manual(breaks=c("Avg PQI","Rent Share"), values = c("solid","dotted")) +
         theme(legend.position = "top", legend.title = element_blank()) 
 
-ggsave("rent_share_pqi.png")
+#ggsave("rent_share_pqi.png")

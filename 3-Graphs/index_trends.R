@@ -22,4 +22,4 @@ all_data %>% group_by(year) %>%
     ylab("Index Score") +
     ggtitle("Figure 4: Index Trends 1991-2017") + xlab("") 
 
-ggsave("index_trends.png")
+#ggsave("index_trends.png")

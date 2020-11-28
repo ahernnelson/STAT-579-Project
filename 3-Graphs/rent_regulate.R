@@ -17,4 +17,4 @@ all_data %>%
     ylab("Log Transformed PQI\n") +
     ggtitle("Variation in PQI by Rent-Regulation Status (2017)")
 
-ggsave("rent_regulate.png")
+#ggsave("rent_regulate.png")
