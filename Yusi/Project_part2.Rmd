@@ -1,0 +1,172 @@
+---
+title: "Project_part2"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# Part three: Household Characteristics Analysis {#anchor}
+
+We have constructed a new index PQI to measure the quality of the house. In this part, we will explore the relationship between the index PQI with the householder characters. The householder characters are described by the variables in the householder record which is part of the date. There are more than 20 variables in the householder record and most of them are categorical. 
+
+In part three, we will analyze the 2017 data set to answer the two question:  
+
++ What the relationship between householder’s characters with the PQI.  
++ How these characters impact the PQI.  
+
+## 1.Data Cleaning
+
+We reduce the redundant columns for data 2017 and generate our new data set by combination. 
+
+```{r}
+data2017 <- read.csv("Datasets/NYCHVS 2017 Occupied File for ASA Challenge_CSV.csv")
+dataall <- read.csv("Datasets/all_data.csv")
+data2017_all <- dataall %>% filter(year == 2017)
+data2017 <- data2017[-1,]
+New_date2017 <- cbind(data2017, data2017_all)
+```
+
+## 2.Variable Selection
+
+There are more than 20 variable in householder record. However, not all variables are related with the PQI index. We exclude some variable which can not provide useful information. For example, Down Payment (2) have only three response: 0=Don't know, 8=Not reported, 9=Not applicable. Evidently,down payment 2 can not provide me useful information and so we exclude it. 
+
+After excluding the variables which are non-informative, we run a regression model to select variables which are statistically significant with PQI. The regression is only run for selection rather than analyzing. The reason is that most of the variables in the regression are categorical and hardly can be converted into numeric for the way surveyed. So,the analysis result from regression is complex and confused to explaining. Instead of using regression model, we will explore these variables by visualization.     
+
+```{r, echo=TRUE, results='hide'}
+New_data_regression <- New_date2017[,-c(254, 252)] %>% select(X_1b,X_1c,X_1f,X_1e,X_2,X_3, X_4a, X_5, X_6, X_12b, pqi, X_14)
+New_data_regression$X_1c <- as.numeric(New_data_regression$X_1c)
+New_data_regression$X_4a <- as.numeric(New_data_regression$X_4a)
+model <- lm(pqi ~ X_1b + X_1c +X_1f + X_1e + X_2 + X_3 + X_4a + X_5 + X_6  + X_12b + X_14,data =New_data_regression)
+summary(model)
+```
+
+We have part of result from the regression model here and we found the variables shown below are statistically significant with the Index PQI. 
+
++ Householder's Race 
++ Householder of Spanish/Hispanic
++ Reason for Householder Moving
++ Age Group
+
+```{r}
+## 
+## Call:
+## lm(formula = pqi ~ X_1b + X_1c + X_1f + X_1e + X_2 + X_3 + X_4a + 
+##     X_5 + X_6 + X_12b + X_14, data = New_data_regression)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -6.6095 -2.3507 -0.9458  1.1736 29.3569 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)  55.730639   8.085602   6.893 5.73e-12 ***
+## X_1b2         0.291392   0.068710   4.241 2.24e-05 ***
+## X_1c         -0.013532   0.002544  -5.319 1.06e-07 ***
+## X_1f10        1.593444   0.307460   5.183 2.22e-07 ***
+## X_1f2         1.322985   0.083938  15.761  < 2e-16 ***
+## X_1f3         1.867951   0.329151   5.675 1.42e-08 ***
+```
+
+## 3.Householder Charactors Analysis
+
+In this section, we will show how these variables impact the PQI index by box-plot or density plot.
+
+### Householder's Race 
+```{r}
+New_data_regression %>% ggplot() + geom_boxplot(aes(x =X_1f, y=pqi)) + 
+    scale_x_discrete(labels=c("1" = "White", "2" = "Black or African American","3"="American Indian or Alaska Native",
+                              "4"="Chinese","5"="Filipino","6"="Korean",
+                              "7"="Asian Indian,Pakistani, or Bangladesh", "8"="Other Asian",
+                              "9"="Native Hawaiian or Pacific Islander","10" = "More Races or Other Race ")) +
+    xlab("Householder's Race") + coord_flip()
+```
+
+### Householder of Spanish/Hispanic
+
+The Box-plot demonstrates that the Native Hawaiian or Pacific islander, American Indian or Alaska Native, Black or African American, and Other Race generally lived in the houses with higher PQI While the people in other race ,such as Korean, Chinese,live in the house with lower PQI.
+
+```{r}
+New_data_regression %>% ggplot() + geom_boxplot(aes(x =X_1e, y=pqi)) +
+    scale_x_discrete(labels=c("1" = "No", "2" = "Puerto Rican","3"="Dominican",
+                                            "4"="Cuban","5"="South/Central American","6"="Mexican, Mexican-American, Chicano",
+                                            "7"="Other Spanish/Hispanic")) +
+    xlab("Householder of Spanish/Hispanic") + coord_flip()
+```
+
+The Box-plot illustrated that the householders from Mexican, Mexican-American, Chicano,Dominican and Puerto Rican generally lived in worse houses with higher PQI. By comparison, the householders from South/Central American, Cuban, and Other Spanish/Hispanic generally lived in better condition houses with low PQI.
+
+### Most Recent Place Householder Lived for 6 Months or More
+
+```{r}
+New_data_regression %>% ggplot() + geom_boxplot(aes(x = X_3, y=pqi)) +
+    scale_x_discrete(labels=c("1"="Always lived in this unit",
+                              "2"="Other unit in same building",
+                              "3"="Bronx",
+                              "4"="Brooklyn",
+                              "5"="Manhattan",
+                              "6"="Queens",
+                              "7"="Staten Island",
+                              "8"="NY, NJ, Connecticut",
+                              "9"="Other state or Puerto Rico",
+                              "10"="Dominican Republic",
+                              "11"="Caribbean (other than Puerto Rico or Dom. Rep.)",
+                              "12"="Mexico, Central America, South America, Canada",
+                              "13"="Armenia, Azerbaijan , ..., other European countries",
+                              "14"="All other countries",
+                              "98"="Not reported")) +
+    xlab("Most Recent Place Householder Lived for 6 Months or More") + coord_flip()
+
+```
+
+The box-plot shows that the Householder lived in the Bronx, Caribbean and Dominican Republic and those who always lived in the same unit may be in the house with higher PQI compared with the householders in other places.In intuition, people who always live in the same unit may have low PQI which mean better house condition. However,the box-plot give us an implication that people may more tend to live in a house with high PQI.      
+
+### Reason for Householder Moving
+
+```{r}
+New_data_regression %>% ggplot() + geom_boxplot(aes(x = X_6, y=pqi)) +
+    scale_x_discrete(labels=c("1"="Change in employment status",
+                              "2"="Looking for work",
+                              "3"="Commuting reasons",
+                              "4"="To attend school",
+                              "5"="Other financial/employment reason",
+                              "6"="Needed larger house or apartment",
+                              "7"="Widowed, separated/divorced, or family decreased",
+                              "8"="Newly married",
+                              "9"="Moved to be with or closer to relatives",
+                              "10"="Wanted to establish separate household",
+                              "11"="Other family reason",
+                              "12"="Wanted this neighborhood/better neighborhood services",
+                              "13"="Other neighborhood reason",
+                              "14"="Wanted to own residence",
+                              "15"="Wanted to rent residence",
+                              "16"="Wanted greater housing affordability",
+                              "17"="Wanted better quality housing",
+                              "18"="Evicted, displaced, or harassment by landlord",
+                              "19"="Other housing reason",
+                              "20"="Any other reason",
+                              "98"="Not reported",
+                              "99"="Not applicable (moved in 2013 or earlier)")) +
+    xlab("Reason for Householder Moving") + coord_flip()
+```
+
+The box plot explores reasons for household to move out. The householders who moved out due to evicted,displaced,or harassment by landlord are more likely to live in low PQI house and those who wanting greater house affordability may also has low PQI. 
+
+### Age Groups
+
+```{r}
+New_data_regression$X_1c_c <- New_data_regression$X_1c %>% cut(breaks=c(15, 22, 30, 50, 65, 85))
+New_data_regression %>% ggplot() + geom_density(aes(x=pqi, fill = X_1c_c)) + scale_fill_discrete(name="Age Group",labels=c("15 to 22", "22 to 30", "30 to 50","50 to 65","65 to 85"))
+```
+The density plot shows that the householders in age group 15 to 22 have a different distribution with householders in other age groups. We can see the difference around the second peak where the PQI is close 3. Near the peak, people in age group 15 to 22 have a more smooth curve than other age groups.It means the people in 15 to 22 are more flexible in accepting various house conditions PQI near the 3 than other age groups. 
+
+# Conclusion
++ We construct an index to quantify the quality of housing units. The PQI was evaluated by the weights of multiple variables.
++ We have a preliminary analysis of rental units based on the PQI and answered the question :Do rental units have a higher PQI, on average, than owner occupied units?
++ We explored the relationship between PQI and householders characters and answered the tow question: What the relationship between householder’s characters with the PQI and How these characters impact the PQI.  
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
