@@ -2,7 +2,7 @@
 
 1. Download Repo to local drive.
 2. Open the project folder (or set the workspace accordingly)
-3. Open *"5-Report/Final Report.Rmd"*
+3. Open __*"5-Report/Final Report.Rmd"*__
 4. Download all dependencies (`tidyverse`, `scales`, `ggsci`)
 5. Knit
 
@@ -15,6 +15,6 @@
 **2-Exploratory Analysis:** Premilinary analysis investigations and plots.  
 **3-Graphs:** Final graphs considered for report and presentation.  
 **4-Analyses:** Formal analysis and models.  
-**5-Report:** Final report .pdf and .Rmd files.
+**5-Report:** Final report .pdf and .Rmd files.  
 **6-Presentation:** Powerpoint and presentation recording.
 
