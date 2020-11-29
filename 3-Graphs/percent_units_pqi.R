@@ -18,6 +18,7 @@ all_data %>% group_by(year) %>% summarise(`Index > 0` = sum(pqi > 0)/n(),
     ylab("") +
     ggtitle("Figure 3: Percent of Units With Quality Problems 1991 - 2017") + 
     theme_bw(base_size = 14) + 
-    theme(legend.position="none")
+    theme(legend.position="none") ->
+    fig_3
 
 #ggsave("percent_units_pqi.png")

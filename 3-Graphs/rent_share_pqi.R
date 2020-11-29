@@ -18,8 +18,8 @@ all_data %>%
         ylab("Mean PQI") +
         scale_y_continuous(sec.axis=sec_axis(~., name="Percent Non-Owner-Occupied Units\n", labels = sec_labels)) +
         theme_bw(base_size = 14) + 
-        ggtitle("Share of Non-Owner-Occupied Units with Average PQI ") +
+        ggtitle("Figure 6: Share of Non-Owner-Occupied Units with Average PQI") +
         scale_linetype_manual(breaks=c("Avg PQI","Rent Share"), values = c("solid","dotted")) +
-        theme(legend.position = "top", legend.title = element_blank()) 
+        theme(legend.position = "top", legend.title = element_blank()) -> fig_6
 
 #ggsave("rent_share_pqi.png")

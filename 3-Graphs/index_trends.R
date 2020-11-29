@@ -1,6 +1,6 @@
 #library(tidyverse)
-library(scales)
-library(ggsci)
+# library(scales)
+# library(ggsci)
 
 labs = seq(1990,2017,3)
 
@@ -20,6 +20,7 @@ all_data %>% group_by(year) %>%
     theme_bw(base_size = 14) + 
     scale_x_continuous(breaks = labs, labels = c("",labs[-1])) + 
     ylab("Index Score") +
-    ggtitle("Figure 4: Index Trends 1991-2017") + xlab("") 
+    ggtitle("Figure 2: Index Trends 1991-2017") + 
+    xlab("") -> fig_2
 
 #ggsave("index_trends.png")
